@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iconik 운영 현황 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate & Amber -->
+    <!-- Application Structure Plan: 사용자의 요청에 따라 정보 구조를 원본 보고서의 흐름에 맞게 재조정했습니다. '솔루션 비교'와 'Why iconik?'을 전면에 배치하여 시스템 선택의 논리적 근거를 먼저 제시합니다. 그 후 '아카이빙 현황', '비용 분석', '업무 고도화 계획', '담당팀' 순으로 구체적인 운영 현황과 미래 계획을 순차적으로 보여줍니다. 이 구조는 사용자가 '왜 이 시스템을 선택했는가'라는 근본적인 질문에 대한 답을 먼저 얻고, 세부 내용을 자연스럽게 탐색하도록 유도합니다. -->
+    <!-- Visualization & Content Choices: 각 섹션의 내용을 요약하지 않고 원본의 상세한 텍스트를 최대한 복원하여 정보의 깊이를 더했습니다. '솔루션 비교'는 상세한 표로, '비용 분석'은 도넛 차트와 상세 내역으로, '아카이빙 현황'은 필터링 가능한 테이블로, '고도화 계획'은 단계별 다이어그램과 카드 UI로 구성하여 상세한 정보와 시각적 명료함의 균형을 맞췄습니다. 모든 상호작용은 Vanilla JS로 구현하여 사용자의 능동적 탐색을 지원합니다. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .nav-link { transition: color 0.2s, border-bottom-color 0.2s; white-space: nowrap; }
+        .nav-link.active { color: #f59e0b; border-bottom-color: #f59e0b; font-weight: 500;}
+        .table-highlight > * { background-color: #fffbeb !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .chart-container { position: relative; height: 320px; width: 100%; max-width: 320px; margin: auto; }
+        @media (min-width: 768px) { .chart-container { height: 350px; max-width: 350px; } }
+        .strong-highlight { background-color: #fef9c3; padding: 0 4px; border-radius: 3px; font-weight: 700; color: #713f12; }
+        .flow-step { position: relative; padding: 1rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; text-align: center; background-color: white; min-height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .flow-arrow { font-size: 2rem; color: #6b7280; line-height: 1; }
+         @media (max-width: 768px) {
+            .flow-container { flex-direction: column; align-items: stretch; }
+            .flow-arrow { transform: rotate(90deg); margin: 0.5rem 0; }
+        }
+        #dynamic-tooltip { position: fixed; background-color: #1e293b; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 500; white-space: nowrap; z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.2s; visibility: hidden; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <header class="text-center pt-10 pb-8">
+            <h1 class="text-4xl font-bold text-slate-900">iconik 운영 현황 보고서</h1>
+            <p class="mt-2 text-lg text-slate-600">미디어 자산 관리(MAM) 시스템 도입 및 운영 계획</p>
+        </header>
+        
+        <nav class="sticky top-0 bg-slate-50/90 backdrop-blur-sm z-10 mb-10 border-b border-slate-200">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex items-center justify-center h-16">
+                    <div class="sm:hidden w-full px-2">
+                        <div class="flex space-x-2 overflow-x-auto pb-2 -mb-2">
+                             <a href="#why-iconik" class="nav-link text-slate-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Why iconik?</a>
+                             <a href="#collaboration-aspect" class="nav-link text-slate-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">협업/자산관리</a>
+                             <a href="#cost-aspect" class="nav-link text-slate-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">비용 분석</a>
+                             <a href="#ai-aspect" class="nav-link text-slate-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">AI 연동</a>
+                             <a href="#status" class="nav-link text-slate-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">진행 현황</a>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex sm:items-center sm:justify-center">
+                        <div class="flex-shrink-0 flex items-center">
+                           <span class="text-2xl font-bold text-amber-500">♠️</span>
+                        </div>
+                        <div class="ml-6">
+                            <div class="flex space-x-4">
+                                <a href="#why-iconik" class="nav-link text-slate-700 px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">Why iconik?</a>
+                                <a href="#collaboration-aspect" class="nav-link text-slate-700 px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">협업 및 자산관리</a>
+                                <a href="#cost-aspect" class="nav-link text-slate-700 px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">비용 분석</a>
+                                <a href="#ai-aspect" class="nav-link text-slate-700 px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">AI 연동 및 개발</a>
+                                <a href="#status" class="nav-link text-slate-700 px-3 py-2 rounded-md text-base font-medium border-b-2 border-transparent">아카이빙 현황</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="space-y-16 md:space-y-24 pb-16">
+            <section id="why-iconik" class="fade-in">
+                 <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800"><span class="text-black">♠️</span> MAM 솔루션 도입 배경</h2>
+                    <p class="mt-2 text-md text-slate-500">포커 콘텐츠 운영 환경에 적합한 미디어 자산 관리 시스템을 비교하고, iconik 선택의 이유를 설명합니다.</p>
+                </div>
+                <div class="overflow-x-auto bg-white p-4 sm:p-6 rounded-xl shadow-md border border-slate-200">
+                     <h3 class="text-xl font-bold mb-4">MAM 시스템 비교 분석</h3>
+                    <table class="min-w-full table-auto text-xs sm:text-sm">
+                        <thead class="bg-slate-100">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 align-top">비교 항목</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 align-top">WSC Sports</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 align-top">Dalet Galaxy</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 table-highlight align-top">Iconik</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 align-top">MediaValet</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600 align-top">Adobe AEM Assets</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                             <tr><td class="px-4 py-3 font-bold align-top">핵심 특징</td><td class="px-4 py-3 align-top">AI 기반 스포츠 하이라이트 자동 생성</td><td class="px-4 py-3 align-top">방송/스포츠용 엔드투엔드 제작 MAM</td><td class="px-4 py-3 align-top table-highlight">클라우드 기반의 유연한 협업 MAM</td><td class="px-4 py-3 align-top">영상 중심의 엔터프라이즈 클라우드 DAM</td><td class="px-4 py-3 align-top">Adobe 생태계 통합 엔터프라이즈 DAM</td></tr>
+                             <tr><td class="px-4 py-3 font-bold align-top">콘텐츠 관리 및 아카이빙</td><td class="px-4 py-3 align-top">스포츠 콘텐츠 중앙 관리, 이벤트 중심 구조</td><td class="px-4 py-3 align-top"><span class="strong-highlight">(강력)</span> 온프레미스+클라우드, 정교한 아카이빙 자동화</td><td class="px-4 py-3 align-top table-highlight"><span class="strong-highlight">(강력)</span> 클라우드 기반 중앙 라이브러리, 저비용 장기 보관 자동화</td><td class="px-4 py-3 align-top">100% 클라우드(Azure), CDN 배포, 무제한 사용자</td><td class="px-4 py-3 align-top">온프레미스/클라우드 지원, Adobe 플랫폼 통합</td></tr>
+                             <tr><td class="px-4 py-3 font-bold align-top">가격 정책</td><td class="px-4 py-3 align-top"><span class="strong-highlight">(초고가)</span> 엔터프라이즈급 견적 문의</td><td class="px-4 py-3 align-top"><span class="strong-highlight">(초고가)</span> 수억 원대 라이선스/구축 비용</td><td class="px-4 py-3 align-top table-highlight"><strong class="text-amber-700">(유연)사용자당 월간 구독(등급에 상이/약 $100)</strong></td><td class="px-4 py-3 align-top"><strong>(중고가)</strong> 연간 약 $6,000부터 시작</td><td class="px-4 py-3 align-top"><span class="strong-highlight">(초고가)</span> 연 $30k~$200k+</td></tr>
+                             <tr><td class="px-4 py-3 font-bold align-top">UI 및 협업</td><td class="px-4 py-3 align-top">AI 추천 클립 검토 UI</td><td class="px-4 py-3 align-top">전문가용 UI (학습 곡선 있음)</td><td class="px-4 py-3 align-top table-highlight"><strong class="text-amber-700">(최상) 직관적 UI, 쉬운 사용법, 외부 공유</strong></td><td class="px-4 py-3 align-top">모던하고 직관적인 UI</td><td class="px-4 py-3 align-top">전문가용 UI, Adobe 생태계 내 최적화</td></tr>
+                             <tr><td class="px-4 py-3 font-bold align-top">장점</td><td class="px-4 py-3 align-top">검증된 최고 수준의 자동화, 팬 참여도 증대</td><td class="px-4 py-3 align-top">실시간 제작/방송 기능 최강, 엔드투엔드 워크플로우</td><td class="px-4 py-3 align-top table-highlight">유연성, 확장성, 뛰어난 협업, 합리적 가격</td><td class="px-4 py-3 align-top">영상 특화 기능, 무제한 사용자, 강력한 보안</td><td class="px-4 py-3 align-top">Adobe 생태계와 완벽 통합, 엔터프라이즈급 워크플로우</td></tr>
+                             <tr><td class="px-4 py-3 font-bold align-top">단점</td><td class="px-4 py-3 align-top">매우 높은 비용, 스포츠 외 콘텐츠 부적합</td><td class="px-4 py-3 align-top">매우 높은 비용, 전문 인력 필요, 소규모 팀에 과도</td><td class="px-4 py-3 align-top table-highlight">스포츠 자동화 기능 부재, 실시간 클립 제작은 외부 연동 필요</td><td class="px-4 py-3 align-top">온프레미스 미지원, 소규모 팀엔 다소 복잡</td><td class="px-4 py-3 align-top">매우 높은 비용, 복잡한 사용법, SMB에 부적합</td></tr>
+                             <tr><td class="px-4 py-3 font-bold align-top">적용 기업</td><td class="px-4 py-3 align-top">PokerGo, NBA, PGA</td><td class="px-4 py-3 align-top">Euronews, Fox Sports</td><td class="px-4 py-3 align-top table-highlight">VICE, PGA Tour, UN</td><td class="px-4 py-3 align-top">Experian, Razer</td><td class="px-4 py-3 align-top">Ford, Coca-Cola</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                 <div class="mt-8 bg-white p-6 rounded-xl shadow-md border border-amber-300">
+                    <h3 class="text-xl font-bold text-center mb-4">결론: 왜 Iconik인가?</h3>
+                    <p class="text-slate-600 max-w-4xl mx-auto text-sm text-center">초기 아카이빙 세팅 과정부터 막대한 비용을 투자하는 것은 비효율적일 수 있습니다. <span class="strong-highlight">Iconik</span>은 합리적인 비용으로 시작하여 시스템의 효용성을 검증하고, 점진적으로 고도화해 나가는 <span class="strong-highlight">초기 테스트 단계에 가장 적합한 솔루션</span>입니다. Iconik을 선택한 핵심적인 이유는 다음과 같습니다.</p>
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <a href="#collaboration-aspect" class="block p-6 bg-amber-50 rounded-lg border border-amber-200 hover:shadow-lg hover:border-amber-400 transition-all text-center">
+                            <div class="text-4xl mb-2">👥</div>
+                            <h4 class="font-bold text-slate-800 text-lg">협업과 자산 관리</h4>
+                            <p class="text-sm text-slate-600 mt-2">직관적인 UI와 효율적인 팀워크 지원</p>
+                        </a>
+                        <a href="#cost-aspect" class="block p-6 bg-amber-50 rounded-lg border border-amber-200 hover:shadow-lg hover:border-amber-400 transition-all text-center">
+                            <div class="text-4xl mb-2">💰</div>
+                            <h4 class="font-bold text-slate-800 text-lg">비용적 측면</h4>
+                            <p class="text-sm text-slate-600 mt-2">합리적인 구독료와 유연한 확장성</p>
+                        </a>
+                        <a href="#ai-aspect" class="block p-6 bg-amber-50 rounded-lg border border-amber-200 hover:shadow-lg hover:border-amber-400 transition-all text-center">
+                            <div class="text-4xl mb-2">🤖</div>
+                            <h4 class="font-bold text-slate-800 text-lg">맞춤형 AI 연동 및 개발</h4>
+                            <p class="text-sm text-slate-600 mt-2">미래 가치 창출을 위한 높은 잠재력</p>
+                        </a>
+                    </div>
+                 </div>
+            </section>
+
+            <section id="collaboration-aspect" class="fade-in">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800"><span class="text-red-500">♥️</span> 협업과 자산 관리: 워크플로우 혁신 제안</h2>
+                    <p class="mt-2 text-md text-slate-500">반복적인 수작업을 자동화하여 제작 시간을 단축하고, GGProduction의 영상 자산 가치를 극대화하는 방안을 제안합니다.</p>
+                </div>
+                <div class="space-y-16">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">현황 및 문제점</h3>
+                        <p class="text-gray-600 text-lg mb-8 max-w-4xl">현재의 영상 제작 워크플로우는 하이라이트 클립 하나를 위해 전체 원본 영상을 다운로드하고 수동으로 탐색해야 하는 비효율적인 과정을 포함하고 있습니다. 이는 상당한 시간 소요와 자원 낭비, 협업의 어려움을 야기합니다.</p>
+                        <div class="bg-white p-8 rounded-xl shadow-lg">
+                            <h4 class="text-xl font-semibold text-center mb-8 text-red-600">AS-IS: 기존의 수동적이고 비효율적인 작업 방식</h4>
+                            <div class="flex items-center justify-center gap-4 flow-container">
+                                <div class="flow-step flex-1"><span class="text-4xl mb-2">📄</span><p class="font-semibold">정보 전달</p><p class="text-sm text-gray-500">기획자가 타임코드와 핸드 정보를 작업자에게 전달</p></div>
+                                <div class="flow-arrow">➡️</div>
+                                <div class="flow-step flex-1"><span class="text-4xl mb-2">💾</span><p class="font-semibold">전체 영상 다운로드</p><p class="text-sm text-gray-500">수백 GB의 원본 영상을 로컬에 다운로드 (시간 소요↑)</p></div>
+                                <div class="flow-arrow">➡️</div>
+                                <div class="flow-step flex-1"><span class="text-4xl mb-2">✂️</span><p class="font-semibold">수동 클립 추출</p><p class="text-sm text-gray-500">영상 전체를 보며 해당 부분을 직접 찾아 컷 편집</p></div>
+                                <div class="flow-arrow">➡️</div>
+                                <div class="flow-step flex-1"><span class="text-4xl mb-2">🎬</span><p class="font-semibold">본 편집 시작</p><p class="text-sm text-gray-500">모든 준비가 끝난 후 비로소 편집 시작</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">혁신적인 해결방안</h3>
+                        <p class="text-gray-600 text-lg mb-8 max-w-4xl">iconik의 Subclip 기능을 도입하면 Adobe Premiere Pro 내에서 직접 필요한 영상을 검색하고 원하는 부분만 즉시 추출할 수 있습니다. 불필요한 다운로드 과정이 사라지고, 워크플로우가 획기적으로 개선됩니다.</p>
+                        <div class="bg-blue-50 p-8 rounded-xl shadow-lg border border-blue-200">
+                            <h4 class="text-xl font-semibold text-center mb-8 text-blue-800">TO-BE: iconik을 활용한 빠르고 효율적인 작업 방식</h4>
+                            <div class="flex items-center justify-center gap-4 flow-container">
+                                <div class="flow-step flex-1 border-blue-200"><span class="text-4xl mb-2">📄</span><p class="font-semibold">정보 전달</p><p class="text-sm text-gray-500">기획자가 Iconik에서 핸드영상을 작업자를 Tag해서 영상 전달</p></div>
+                                <div class="flow-arrow text-blue-500">➡️</div>
+                                <div class="flow-step flex-1 border-blue-200"><span class="text-4xl mb-2">🔍</span><p class="font-semibold">영상 검색</p><p class="text-sm text-gray-500">Adobe Premiere 플러그인에서 바로 영상 검색</p></div>
+                                <div class="flow-arrow text-blue-500">➡️</div>
+                                <div class="flow-step flex-1 border-blue-200"><span class="text-4xl mb-2">✨</span><p class="font-semibold">Subclip 즉시 추출</p><p class="text-sm text-gray-500">원본 다운로드 없이 필요한 부분만 타임라인으로 바로 추출</p></div>
+                                <div class="flow-arrow text-blue-500">➡️</div>
+                                <div class="flow-step flex-1 border-blue-200"><span class="text-4xl mb-2">🚀</span><p class="font-semibold">편집 바로 시작</p><p class="text-sm text-gray-500">검색 즉시 편집을 시작하여 제작 시간 단축</p></div>
+                            </div>
+                            <div class="mt-8">
+                                <h4 class="text-lg font-semibold text-center text-gray-700 mb-4">Adobe Premier 에 Iconik Plug in 설치 후 영상을 바로 추출해서 작업하는 방식 예시</h4>
+                                <div class="flex justify-center">
+                                    <button data-modal-toggle="image-modal" data-image-urls="https://raw.githubusercontent.com/TreySong87/iconik1/48069a7024dbcbcd07e82b51ab471b279168bc79/1.png,https://raw.githubusercontent.com/TreySong87/iconik1/48069a7024dbcbcd07e82b51ab471b279168bc79/2.png,https://raw.githubusercontent.com/TreySong87/iconik1/48069a7024dbcbcd07e82b51ab471b279168bc79/3.png,https://raw.githubusercontent.com/TreySong87/iconik1/48069a7024dbcbcd07e82b51ab471b279168bc79/4.png">
+                                        <img src="https://raw.githubusercontent.com/TreySong87/iconik1/48069a7024dbcbcd07e82b51ab471b279168bc79/1.png" alt="Iconik 플러그인 예시" class="max-w-full md:max-w-2xl rounded-lg shadow-lg cursor-pointer transition-transform hover:scale-105">
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">핵심 기대 효과</h3>
+                        <p class="text-gray-600 text-lg mb-8 max-w-4xl"><span class="strong-highlight">작업 시간의 획기적인 단축</span>과 <span class="strong-highlight">업무 효율성 극대화</span>는 단순한 편의성 개선을 넘어, 다음과 같은 실질적인 비즈니스 가치로 이어집니다.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="bg-white p-6 rounded-xl shadow-md"><div class="flex items-center mb-4"><div class="flex-shrink-0 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-2xl">🚀</div><h4 class="ml-4 text-xl font-bold text-gray-800">생산성 향상</h4></div><p class="text-gray-600">단순 반복 업무 자동화로 동일 시간 내 더 많은 고품질 콘텐츠 제작이 가능해집니다.</p></div>
+                            <div class="bg-white p-6 rounded-xl shadow-md"><div class="flex items-center mb-4"><div class="flex-shrink-0 h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-2xl">🗄️</div><h4 class="ml-4 text-xl font-bold text-gray-800">체계적인 자산 관리</h4></div><p class="text-gray-600">모든 영상 자산이 중앙에서 관리되어 검색과 접근성이 비약적으로 향상되고, 자산의 재활용 가치가 높아집니다.</p></div>
+                            <div class="bg-white p-6 rounded-xl shadow-md"><div class="flex items-center mb-4"><div class="flex-shrink-0 h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold text-2xl">🤝</div><h4 class="ml-4 text-xl font-bold text-gray-800">부서 간 협업 강화</h4></div><p class="text-gray-600">동일 플랫폼 기반의 직관적 소통으로 커뮤니케이션 오류를 줄이고, 기획자와 편집자 간의 협업을 촉진합니다.</p></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Subcliping 투자 비용</h3>
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden md:flex">
+                            <div class="md:w-1/2 p-8 bg-blue-800 text-white flex flex-col justify-center items-center text-center">
+                                <h4 class="text-2xl font-bold">초기 도입 비용</h4>
+                                <p class="text-5xl font-extrabold mt-2">$1,500 <span class="text-2xl font-normal">+α</span></p>
+                                <p class="mt-1 text-xs text-blue-200">온프레미스 환경(자체NAS환경) 사용 시 추가 비용 발생</p>
+                                <div class="border-t border-blue-600 w-1/2 my-6"></div>
+                                <h4 class="text-2xl font-bold">연간 유지 비용</h4>
+                                <p class="text-5xl font-extrabold mt-2">$6,000</p>
+                             </div>
+                            <div class="md:w-1/2 p-8 flex flex-col justify-center items-center text-center">
+                                <div class="flex items-center space-x-4">
+                                    <img src="https://a-us.storyblok.com/f/1019449/1100x613/354f35a1a0/iconik-logo.png" alt="iconik 로고" class="h-10">
+                                    <span class="text-4xl font-light text-slate-400">×</span>
+                                    <img src="https://raw.githubusercontent.com/TreySong87/iconik1/main/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-07-08%20153832.png" alt="Thumbwar 로고" class="h-12">
+                                </div>
+                                <p class="mt-4 text-blue-800 font-semibold">개발 및 제공은 iconik 공식 협력사인 Thumbwar 를 통해 즉시 적용 가능합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="cost-aspect" class="fade-in">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800"><span class="text-red-500">♦️</span> 비용적 측면</h2>
+                    <p class="mt-2 text-md text-slate-500">iconik 운영에 소요된 비용의 상세 내역과 비중을 시각적으로 분석합니다.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                         <h3 class="text-xl font-bold mb-4 text-center">고정 비용 분석</h3>
+                        <div class="chart-container">
+                            <canvas id="costChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                        <h3 class="text-xl font-bold mb-2">지금까지의 결제 상세 내역</h3>
+                        <p class="text-sm text-slate-500 mb-4">2025.07.10 기준, 총 $3,000 예산 중 $2,585.25 사용</p>
+                        <div class="space-y-4 text-sm">
+                            <div><div class="flex justify-between font-semibold"><span>계정 구독료</span><span>$1,110.00</span></div><p class="text-xs text-slate-500">월 1회 결제, Power User(마스터 계정) / Standard User(작업자 계정)</p></div>
+                            <div class="border-t border-slate-200 pt-3"><div class="flex justify-between font-semibold"><span>Storage 유지비 (Proxy)</span><span>$897.29</span></div><p class="text-xs text-slate-500">NAS 프록시 유지비, 영상 업로드 시 지속 결제</p></div>
+                            <div class="border-t border-slate-200 pt-3"><div class="flex justify-between font-semibold"><span>Transfer 비용 (Transcode)</span><span>$577.97</span></div><p class="text-xs text-slate-500">영상 트랜스코딩 비용, 영상 용량에 따라 비용 상이</p></div>
+                             <div class="border-t-2 border-slate-800 pt-3"><div class="flex justify-between font-bold text-base"><span>총계</span><span>$2,585.25</span></div></div>
+                        </div>
+                         <div class="mt-6 bg-amber-50 p-4 rounded-lg">
+                             <h3 class="text-xl font-bold mb-4">추후 예상 지출 내역</h3>
+                             <table class="w-full text-sm text-left">
+                                 <tbody class="divide-y divide-gray-200">
+                                     <tr><td class="py-2">계정구독료</td><td class="py-2 text-right font-semibold">$925</td></tr>
+                                     <tr><td class="py-2">Storage 유지비(Proxy)</td><td class="py-2 text-right font-semibold">$400 <span class="text-xs font-normal">(추정치)</span></td></tr>
+                                     <tr><td class="py-2">Transfer 비용(Transcode)</td><td class="py-2 text-right font-semibold">$300 <span class="text-xs font-normal">(추정치)</span></td></tr>
+                                 </tbody>
+                             </table>
+                             <p class="text-xs text-slate-500 mt-4">* 다음 항목은 Subcliping Upgrade 도입 시 발생하는 비용입니다.</p>
+                             <table class="w-full text-sm text-left mt-2">
+                                 <tbody class="divide-y divide-gray-200">
+                                     <tr><td class="py-2">Subcliping 초기 설정비용</td><td class="py-2 text-right font-semibold">$1,500 <span class="text-xs font-normal">(추정치)</span></td></tr>
+                                     <tr><td class="py-2">Subcliping 연간 유지비용</td><td class="py-2 text-right font-semibold">$6,000</td></tr>
+                                 </tbody>
+                             </table>
+                             <div class="mt-4 text-center border-t border-amber-200 pt-4">
+                                 <p class="text-lg font-semibold text-slate-700">2025년 총 예상 비용 : <span class="text-2xl font-bold text-amber-600">$11,400</span></p>
+                                 <p class="text-lg font-semibold text-slate-700 mt-2">추후 연간 예상 유지 비용 : <span class="text-2xl font-bold text-amber-600">$8,000 내외</span></p>
+                                 <p class="mt-4 text-green-600 font-bold"><span class="strong-highlight bg-green-200 text-green-800">초고가 엔터프라이즈급 솔루션에 비해 상대적으로 저렴한 비용</span></p>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="ai-aspect" class="fade-in">
+                <div class="text-center mb-12">
+                     <h2 class="text-3xl font-bold text-slate-800"><span class="text-black">♣️</span> 맞춤형 AI 연동 및 개발</h2>
+                </div>
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl font-bold text-slate-900">핵심 AI 역량: 영상 속 모든 정보를 데이터로</h3>
+                    <div class="mt-4 text-lg text-blue-800 bg-blue-100 font-semibold max-w-3xl mx-auto py-4 px-4 rounded-lg text-center">
+                        <p>NSUS ATI 팀과 협의 결과, 상기 4가지 핵심 정보 추출 기능은<br>현재 기술 수준으로 모두 구현 가능합니다.</p>
+                    </div>
+                </div>
+                <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden mb-16">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="p-4 font-bold text-slate-600">분류</th>
+                                    <th class="p-4 font-bold text-slate-600">추출 항목</th>
+                                    <th class="p-4 font-bold text-slate-600">사용 기술 예시</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-t hover:bg-slate-50 transition-colors cursor-help" data-tooltip="지속적으로 노출되는 유명 Poker Player의 얼굴을 인식해서 자동분류">
+                                    <td class="p-4 font-semibold">👤 인물</td><td class="p-4">얼굴 인식 → 플레이어 태그</td><td class="p-4 text-slate-500">Face‑ID 모델 + 선수 DB</td>
+                                </tr>
+                                <tr class="border-t hover:bg-slate-50 transition-colors cursor-help" data-tooltip="대부분의 좋은 핸드는 핸드 길이가 길기 때문에 구간별로 핸드 길이를 인식해서 '좋은 핸드'를 분류">
+                                    <td class="p-4 font-semibold">⏱️ 구간</td><td class="p-4">핸드 시작·종료 시점</td><td class="p-4 text-slate-500">그래픽 OCR · RFID 이벤트</td>
+                                </tr>
+                                <tr class="border-t hover:bg-slate-50 transition-colors cursor-help" data-tooltip="블라인드 대비 팟 사이즈가 큰 핸드는 좋은 핸드이거나 All-in 핸드이므로 팟 사이즈를 인식하여 '좋은 핸드'를 분류">
+                                    <td class="p-4 font-semibold">💰 게임 정보</td><td class="p-4">팟 사이즈·블라인드 레벨</td><td class="p-4 text-slate-500">RFID 스택 · HUD 파싱</td>
+                                </tr>
+                                <tr class="border-t hover:bg-slate-50 transition-colors cursor-help" data-tooltip="해설자의 주요한 멘트/지정된 키워드를 인식해서 분류">
+                                    <td class="p-4 font-semibold">💬 해설 코멘트</td><td class="p-4">지정 키워드(“all‑in”, “bubble” 등)</td><td class="p-4 text-slate-500">STT + Keyword Spotting</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-center mb-12">
+                     <h3 class="text-2xl font-bold text-slate-900">최적의 솔루션: iconik + NSUS ATI AI</h3>
+                    <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">iconik의 강력한 확장성과 NSUS ATI 팀의 검증된 AI 기술을 결합하여, 포커 콘텐츠에 완벽하게 최적화된 아카이빙 시스템을 구축합니다.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-lg transition-shadow"><div class="text-3xl mb-3">🛠️</div><h3 class="font-bold text-xl mb-2">완벽한 커스터마이징</h3><p>iconik의 REST API, Python SDK, Webhooks를 통해 메타데이터 필드를 포커 전용으로 완벽하게 맞춤 설계합니다.</p></div>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-lg transition-shadow"><div class="text-3xl mb-3">🔌</div><h3 class="font-bold text-xl mb-2">AI 분석 계정 연동</h3><p>ATI 팀의 AI 모델을 iconik 분석 프로필로 등록하여, 클릭 한 번으로 자동 분석을 실행하는 워크플로우를 구현합니다.</p></div>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-lg transition-shadow"><div class="text-3xl mb-3">♻️</div><h3 class="font-bold text-xl mb-2">연구 자산 재사용</h3><p>기존에 개발된 얼굴, RFID, 음성 모델을 Docker 컨테이너로 패키징하여, 도입 초기부터 높은 정확도를 확보합니다.</p></div>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-lg transition-shadow"><div class="text-3xl mb-3">🔄</div><h3 class="font-bold text-xl mb-2">지속적인 성능 개선</h3><p>사용자의 메타데이터 수정 내역을 AI 재학습 파이프라인에 자동으로 피드백하여, AI 모델의 성능을 주기적으로 향상시킵니다.</p></div>
+                </div>
+            </section>
+            
+            <section id="status" class="fade-in">
+                 <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800">아카이빙 진행 현황</h2>
+                    <p class="mt-2 text-md text-slate-500">콘텐츠 카테고리별 아카이빙 작업의 현재 상태를 보여줍니다. 필터를 사용하여 특정 프로젝트를 확인하세요.</p>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-slate-200">
+                    <div class="mb-4 text-sm text-slate-600">현재 약 <strong class="text-amber-600">1,500개</strong>의 영상 및 서브클립 콘텐츠 아카이빙을 진행하고 있습니다.</div>
+                    <div class="flex flex-wrap justify-center gap-2 mb-6">
+                        <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold" data-filter="all">전체</button>
+                        <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold" data-filter="WSOP">WSOP</button>
+                        <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold" data-filter="PAD">PAD</button>
+                        <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold" data-filter="HCL">HCL</button>
+                        <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold" data-filter="GGPoker">GGPoker</button>
+                        <button class="filter-btn px-4 py-2 rounded-full text-sm font-semibold" data-filter="MPP">MPP</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Category</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Project Name</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">상태</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">비고</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archiveTableBody" class="bg-white divide-y divide-slate-200 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="future-plan" class="fade-in">
+                 <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800">향후 전망 및 제언</h2>
+                 </div>
+                 <div class="bg-red-100 border-l-4 border-red-500 text-red-800 p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">엔터프라이즈급 솔루션 도입 검토</h3>
+                    <p class="mb-4">아카이빙의 중요도가 점점 커짐에 따라, 향후에는 엔터프라이즈급 솔루션 도입을 반드시 고려해야 합니다.</p>
+                    <p>특히 <strong class="font-semibold">WSC SPORTS</strong>는 NBA, PGA 등 레거시 스포츠의 MAM 시스템을 담당하고 있으며, POKERGO에서도 실제로 사용되었던 검증된 솔루션입니다. 이는 우리에게 가장 유력한 다음 고려 대상이 될 것입니다.</p>
+                    <p class="mt-4 font-semibold">차주, WSC SPORTS 측과 관련 미팅이 예정되어 있습니다.</p>
+                 </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white p-2 rounded-lg shadow-xl max-w-5xl w-full max-h-full relative flex items-center justify-center">
+            <button data-modal-hide="image-modal" class="absolute -top-4 -right-4 text-white bg-slate-700 rounded-full h-10 w-10 flex items-center justify-center hover:bg-slate-900 z-20">
+                <span class="text-2xl">&times;</span>
+            </button>
+            <button id="gallery-prev" class="absolute left-4 text-white bg-slate-700/50 rounded-full h-12 w-12 flex items-center justify-center hover:bg-slate-900 z-20">
+                <span class="text-3xl">‹</span>
+            </button>
+            <img id="modal-image" src="" alt="확대된 이미지" class="max-w-full max-h-[90vh] object-contain">
+            <button id="gallery-next" class="absolute right-4 text-white bg-slate-700/50 rounded-full h-12 w-12 flex items-center justify-center hover:bg-slate-900 z-20">
+                <span class="text-3xl">›</span>
+            </button>
+        </div>
+    </div>
+    <div id="dynamic-tooltip"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const costChartCtx = document.getElementById('costChart');
+            if(costChartCtx) {
+                 new Chart(costChartCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['계정 구독료', 'Storage 유지비', 'Transfer 비용'],
+                        datasets: [{
+                            label: '비용', data: [1110, 897.29, 577.97],
+                            backgroundColor: ['#fbbf24', '#475569', '#94a3b8'],
+                            borderColor: '#f8fafc',
+                            borderWidth: 2, hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: '고정 비용 분석', font: { size: 16 } },
+                            legend: { position: 'bottom', labels: { font: { size: 12 } } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(c) {
+                                        const total = c.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((c.parsed / total) * 100).toFixed(1) + '%';
+                                        return `${c.label}: $${c.raw.toFixed(2)} (${percentage})`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                });
+            }
+
+            const archiveData = [
+                { category: 'WSOP', project: '2025 WSOP LAS VEGAS', status: '방송 이벤트 진행 중', statusColor: 'blue', note: 'Subclip 분류' },
+                { category: 'WSOP', project: '2024 WSOP PARADISE SME', status: '핸드 아카이빙 완료', statusColor: 'green', note: 'Handclip 분류' },
+                { category: 'WSOP', project: '2024 WSOP EUROPE', status: '핸드 아카이빙 완료', statusColor: 'green', note: 'Handclip 분류' },
+                { category: 'WSOP', project: '2024 WSOP LAS VEGAS PokerGo Clip', status: '핸드 아카이빙 완료', statusColor: 'green', note: 'Handclip 분류' },
+                { category: 'WSOP', project: '2024 WSOPC LA', status: '핸드 아카이빙 완료', statusColor: 'green', note: 'Handclip 분류' },
+                { category: 'WSOP', project: '2023 WSOP PARADISE', status: '핸드 아카이빙 완료', statusColor: 'green', note: 'Handclip 분류' },
+                { category: 'WSOP', project: 'WSOP Archive (2011-2016)', status: '진행 중(핸드 분류 x)', statusColor: 'yellow', note: '' },
+                { category: 'WSOP', project: 'WSOP Archive (2003-2010)', status: '진행 중(핸드 분류 x)', statusColor: 'yellow', note: '' },
+                { category: 'WSOP', project: 'WSOP Pre-2003 (1973-2002)', status: '진행 중(핸드 분류 x)', statusColor: 'yellow', note: '' },
+                { category: 'PAD', project: 'GOG S1 Full Episode', status: '핸드 아카이빙 완료', statusColor: 'green', note: 'Subclip 분류' },
+                { category: 'PAD', project: 'PAD S12 Full Episode', status: '핸드 아카이빙 완료', statusColor: 'green', note: 'Subclip 분류' },
+                { category: 'PAD', project: 'PAD S13 Full Episode', status: '핸드 아카이빙 완료', statusColor: 'green', note: 'Subclip 분류' },
+                { category: 'HCL', project: 'HCL Live Youtube Streaming', status: '진행 중(핸드 분류 x)', statusColor: 'yellow', note: '' },
+                { category: 'GGPoker', project: 'GGMillion$', status: '진행 중(핸드 분류 x)', statusColor: 'yellow', note: '' },
+                { category: 'MPP', project: 'MPP Cyprus', status: '진행 중(핸드 분류 x)', statusColor: 'yellow', note: '' },
+            ];
+            
+            const tableBody = document.getElementById('archiveTableBody');
+            const statusColors = { green: 'bg-green-100 text-green-800', blue: 'bg-blue-100 text-blue-800', yellow: 'bg-yellow-100 text-yellow-800' };
+
+            function renderTable(filter) {
+                tableBody.innerHTML = '';
+                const filteredData = filter === 'all' ? archiveData : archiveData.filter(d => d.category === filter);
+                filteredData.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-900">${item.category}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-500">${item.project}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-500"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[item.statusColor]}">${item.status}</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-500">${item.note}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const filter = button.dataset.filter;
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('bg-amber-500', 'text-white');
+                        btn.classList.add('bg-white', 'border', 'border-slate-300', 'text-slate-600');
+                    });
+                    button.classList.add('bg-amber-500', 'text-white');
+                    button.classList.remove('bg-white', 'border', 'border-slate-300', 'text-slate-600');
+                    renderTable(filter);
+                });
+            });
+            renderTable('all');
+            document.querySelector('.filter-btn[data-filter="all"]').classList.add('bg-amber-500', 'text-white');
+            document.querySelector('.filter-btn[data-filter="all"]').classList.remove('bg-white', 'border', 'border-slate-300', 'text-slate-600');
+
+            const sections = document.querySelectorAll('main > section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                        });
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px', threshold: 0.5 });
+            sections.forEach(section => observer.observe(section));
+
+            // Image Modal Logic
+            const imageModalToggles = document.querySelectorAll('[data-modal-toggle="image-modal"]');
+            const imageModal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            const imageModalHideButtons = document.querySelectorAll('[data-modal-hide="image-modal"]');
+            const prevButton = document.getElementById('gallery-prev');
+            const nextButton = document.getElementById('gallery-next');
+            let currentImageIndex = 0;
+            let imageUrls = [];
+
+            function showImage(index) {
+                if (imageUrls.length > 0) {
+                    modalImage.src = imageUrls[index];
+                }
+            }
+            
+            function openModal(urls) {
+                imageUrls = urls.split(',');
+                currentImageIndex = 0;
+                showImage(currentImageIndex);
+                imageModal.classList.remove('hidden');
+                imageModal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal() {
+                imageModal.classList.add('hidden');
+                imageModal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+
+            imageModalToggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const urls = toggle.dataset.imageUrls;
+                    if (urls) {
+                        openModal(urls);
+                    }
+                });
+            });
+
+            prevButton?.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex - 1 + imageUrls.length) % imageUrls.length;
+                showImage(currentImageIndex);
+            });
+
+            nextButton?.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex + 1) % imageUrls.length;
+                showImage(currentImageIndex);
+            });
+
+            imageModalHideButtons.forEach(button => {
+                button.addEventListener('click', closeModal);
+            });
+
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    closeModal();
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (imageModal && !imageModal.classList.contains('hidden')) {
+                    if (e.key === 'ArrowRight') {
+                        nextButton?.click();
+                    } else if (e.key === 'ArrowLeft') {
+                        prevButton?.click();
+                    } else if (e.key === 'Escape') {
+                        closeModal();
+                    }
+                }
+            });
+            
+            // Tooltip logic for AI capabilities table
+            const tooltipEl = document.getElementById('dynamic-tooltip');
+            const tooltipRows = document.querySelectorAll('tr[data-tooltip]');
+
+            tooltipRows.forEach(row => {
+                row.addEventListener('mouseover', (e) => {
+                    tooltipEl.textContent = row.getAttribute('data-tooltip');
+                    tooltipEl.style.opacity = '1';
+                    tooltipEl.style.visibility = 'visible';
+                });
+
+                row.addEventListener('mouseout', () => {
+                    tooltipEl.style.opacity = '0';
+                    tooltipEl.style.visibility = 'hidden';
+                });
+
+                row.addEventListener('mousemove', (e) => {
+                    let x = e.clientX + 15;
+                    let y = e.clientY - 35;
+                    if (x + tooltipEl.offsetWidth > window.innerWidth) {
+                        x = e.clientX - tooltipEl.offsetWidth - 15;
+                    }
+                    if (y < 0) {
+                        y = e.clientY + 15;
+                    }
+                    tooltipEl.style.left = x + 'px';
+                    tooltipEl.style.top = y + 'px';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
